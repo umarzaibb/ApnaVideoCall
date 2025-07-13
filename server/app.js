@@ -1,9 +1,9 @@
 import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
-import connectDB from './utils/connectDB.js';
-import router from "./ROUTES/routes.js";
-import socketServer from './utils/Socketio.js';
+import connectDB from './utils/ConnectDB.js';
+import router from "./routers/routes.js";
+import socketServer from './utils/Socket.io.js';
 
 const app=express();
 
