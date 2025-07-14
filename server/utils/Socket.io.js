@@ -20,18 +20,20 @@ export default function socketServer(server) {
     },
   });
 
-  let room = []; //syntax: room=[roomID, user=[]]
+  let room = []; //syntax: room=[roomID, user=[], username[] ]
 
   io.on("connection", (socket) => {
     console.log(`User :${socket.id} connected to socket.io`);
 
 
-    socket.on("join-meeting", ({ roomID, username, isCreator }) => {
+    socket.on("join-meeting", ({ roomID, username }) => {
 
-      if (isCreator) {
+      let isRoomCreated=room.find((r)=>roomID==r.roomID);
+      if (!isRoomCreated) {
         let roomObject = {
           roomID: roomID,
           user: [socket.id],
+          username: [username]
         };
 
         room.push(roomObject);
@@ -40,21 +42,22 @@ export default function socketServer(server) {
         room.filter((obj) => {
           if (obj.roomID == roomID) {
             obj.user.push(socket.id);
+            obj.username.push(username);
           }
           console.log(room);
         });
       }
 
-      let toSendUser=room.filter((r)=>roomID===r.roomID)[0].user;
-      toSendUser.forEach((r) => {
-  io.to(r).emit("Get-Connected-User", { newUsers: toSendUser });
+      let toSendUser=room.filter((r)=>roomID===r.roomID)[0];
+      toSendUser.user.forEach((r) => {
+  io.to(r).emit("Get-Connected-User", { newUsers: toSendUser.user, usernames: toSendUser.username });
 });
     });
 
     socket.on("receive-msg", ({message, username, roomID})=>{
           room.filter((currRoom)=>{
             if(currRoom.roomID==roomID){
-               io.to(currRoom.user).emit("receive-msg", {message, sender: username, IsAdmin: currRoom.user[0]==socket.id});
+               io.to(currRoom.user).emit("receive-msg", {message, sender: username});
             }
           })
     });
